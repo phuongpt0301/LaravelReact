@@ -3,7 +3,8 @@
     "scripts": {
         "start": "webpack-dev-server --mode development --open",
         "build:dev": "webpack --mode development",
-        "build": "webpack --mode production"
+        "build": "webpack --mode production",
+        "watch": "webpack --watch"
     },
     "dependencies": {
         "react": "^16.13.0",

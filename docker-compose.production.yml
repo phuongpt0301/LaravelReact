@@ -1,0 +1,71 @@
+version: '3'
+services: 
+    #Nginx Service
+    nginx:
+        container_name: nginx
+        build: ./docker/nginx
+        ports:
+            - 80:80
+            - 443:443
+        volumes:
+            - ./:/var/www/app
+        depends_on:
+            - app
+        networks:
+            - app-network
+        environment: 
+            PRODUCTION: 'true'
+    #PHP Service
+    app:
+        build:
+            context: ./
+            dockerfile: Dockerfile
+        container_name: app
+        environment:
+            APP_ENV: 'development'
+            APP_DEBUG: 'true'
+            LOG_CHANNEL: 'stderr'
+            DB_CONNECTION: 'pgsql'
+            DB_HOST: 'db'
+            DB_PORT: '5432'
+            DB_DATABASE: 'laravel_development'
+            DB_USERNAME: 'docker'
+            DB_PASSWORD: 'docker123'
+        working_dir: /var/www/app
+        volumes: 
+            - ./:/var/www/app
+            - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+        expose:
+            - 9000
+        depends_on:
+            - db
+        networks:
+            - app-network
+
+    #Database Service
+    db:
+        image: postgres:12.1
+        container_name: db
+        environment:
+            POSTGRES_USER: 'docker'
+            POSTGRES_PASSWORD: 'docker'
+            POSTGRES_DB: 'laravel_development'
+        volumes:
+            - ./docker/db/data:/var/lib/postgresql/data
+            - ./docker/db/sql:/docker-entrypoint-initdb.d
+            - ./docker/db/my.cnf:/etc/mysql/my.cnf
+        ports:
+            - 5432:5432
+        networks:
+            - app-network
+    
+#Docker Networks
+networks:
+    app-network:
+        driver: "bridge"
+
+#Volumes
+volumes:
+    dbdata:
+        driver: "local"
+            
